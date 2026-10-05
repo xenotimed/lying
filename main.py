@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, redirect
 from base64 import b64encode
 from random import randrange
 
-from game import Game, Speaker, Player
+from game import Game, Speaker
 
 app = Flask(__name__)
 
@@ -41,10 +41,9 @@ def join():
             return redirect('/bad_code.html')
         if request.form['wlink'].startswith('https://'):
             return redirect('/name_not_links_ya_fool.html')
-        games[code].add_player(Player(
-            ne,
-            Speaker(request.form['wlink'])
-        ))
+        games[code].add_speaker(
+            Speaker(ne, request.form['wlink'])
+        )
         return redirect(f'/joined/{code}/speaker/{ne}')
     else:
         raise KeyError('Role doesnt exist')
@@ -55,8 +54,7 @@ def joined(code: str, role: str, ne: str):
     assert code in games
     if request.method.upper() == 'POST':
         games[code].attach_desc(ne, request.form['desc'])
-    time = games[code].get_time(ne)
-    return render_template(f'joined_{role}.html', code= code, ne= ne, time= time)
+    return render_template(f'joined_{role}.html', code= code, ne= ne)
 
 @app.route('/api/<code>/start')
 def api_start(code: str):
